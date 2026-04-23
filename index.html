@@ -360,6 +360,7 @@
            ★ 모바일 전체화면 (480px 이하)
         ============================================================ */
         @media (max-width: 480px) {
+            /* 메인 페이지 */
             .hero { padding: 56px 18px 48px; }
             .cards-section { padding: 44px 16px 56px; }
             .cards-grid { gap: 13px; }
@@ -369,19 +370,24 @@
             .card-sub { margin-bottom: 16px; }
             .card-cta { font-size: 0.74rem; }
 
-            /* 배경 오버레이 제거 */
+            /* ★ 모달: 오버레이 제거, flex stretch로 카드 꽉 채움 */
             .modal-overlay { display: none; }
+            .modal {
+                align-items: stretch;    /* 카드를 세로로 꽉 늘림 */
+                justify-content: stretch;
+                padding: 0;
+            }
 
-            /* ★ 모달 카드: position:fixed 로 화면 꽉 채움 */
+            /* ★ 모달 카드: 부모(.modal=화면전체)를 꽉 채움 */
             .modal-card {
-                position: fixed;
-                inset: 0;                /* top:0 right:0 bottom:0 left:0 */
+                position: relative;      /* fixed 대신 부모 flex 기준 */
                 width: 100%;
-                height: 100%;
+                height: 100%;            /* 부모(=화면 전체) 높이 채움 */
                 max-width: none;
                 max-height: none;
                 border-radius: 0;
                 animation: none;
+                box-shadow: none;
             }
 
             /* 슬라이드 헤더: 최소 높이 */
@@ -391,7 +397,7 @@
             #slideDesc  { font-size: 0.72rem; margin-top: 1px; }
             .slide-counter { padding: 3px 10px; font-size: 0.7rem; }
 
-            /* ★ 이미지 영역: 16:9 해제 → 남은 화면 전부 사용 */
+            /* ★ 이미지 영역: 16:9 해제 → 헤더·진행바 제외 나머지 전부 */
             .slide-body {
                 flex: 1 1 0;
                 min-height: 0;
@@ -409,7 +415,9 @@
             /* 닫기 버튼: 반투명 어두운 배경 */
             .close-btn {
                 top: 10px; right: 10px; width: 30px; height: 30px;
-                background: rgba(0,0,0,0.55); border-color: rgba(255,255,255,0.25); color: #fff;
+                background: rgba(0,0,0,0.55);
+                border-color: rgba(255,255,255,0.25);
+                color: #fff;
             }
         }
 
