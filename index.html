@@ -290,11 +290,14 @@
         }
         .close-btn:hover { background: var(--text-dark); color: #fff; border-color: var(--text-dark); }
 
-        /* 이미지 영역 (데스크탑: 16:9) */
+        /* ★ 이미지 영역: 고정 비율 없음 — 이미지 원본 비율 그대로 표시 */
         .slide-body {
-            background: #0D0D0D; flex-shrink: 0;
-            position: relative; width: 100%;
-            aspect-ratio: 16 / 9; max-height: 58vh; overflow: hidden;
+            background: #0D0D0D;
+            flex: 1 1 0;        /* 헤더/진행바 제외 나머지 공간 전부 사용 */
+            min-height: 0;
+            position: relative;
+            width: 100%;
+            overflow: hidden;
         }
 
         /* 이미지 + 버튼 레이어 */
@@ -304,11 +307,15 @@
             padding: 0 54px;
         }
 
-        /* ★ 이미지: 비율 유지, 잘림 없음 */
+        /* ★ 이미지: 원본 비율 그대로, 잘림 없음 (세로면 세로, 가로면 가로) */
         #slideImage {
-            max-width: 100%; max-height: 100%;
-            object-fit: contain; image-orientation: none;
-            border-radius: 4px; display: block;
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            image-orientation: none;
+            display: block;
         }
 
         /* 이미지 없을 때 */
