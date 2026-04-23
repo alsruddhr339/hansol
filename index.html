@@ -359,17 +359,60 @@
             .card-sub { margin-bottom: 16px; }
             .card-cta { font-size: 0.74rem; }
 
-            /* 모바일: 모달이 하단 시트처럼 올라옴 */
-            .modal { align-items: flex-end; }
-            .modal-card { border-radius: 20px 20px 0 0; max-height: 96vh; width: 100%; }
-            .slide-header { padding: 13px 48px 12px 16px; }
-            #slideDate { font-size: 0.82rem; }
-            #slideDesc { font-size: 0.74rem; }
-            .slide-body { max-height: 54vw; } /* 모바일도 16:9 유지 */
-            .slide-inner { padding: 0 44px; }
-            .nav-btn { width: 34px; height: 34px; font-size: 1.1rem; }
-            .btn-prev { left: 5px; }
-            .btn-next { right: 5px; }
+            /* ★ 모바일: 슬라이드쇼 완전 전체화면 */
+            .modal {
+                align-items: stretch;
+                justify-content: stretch;
+            }
+            .modal-overlay { display: none; } /* 모바일은 배경 불필요 */
+            .modal-card {
+                border-radius: 0;
+                width: 100%;
+                height: 100vh;
+                height: 100dvh;   /* iOS 주소창 제외한 실제 화면 높이 */
+                max-height: 100dvh;
+            }
+
+            /* 슬라이드 헤더: 최소한의 높이로 */
+            .slide-header {
+                padding: 10px 48px 9px 14px;
+                min-height: 0;
+            }
+            #slideCategory { font-size: 0.6rem; margin-bottom: 2px; }
+            #slideDate  { font-size: 0.8rem; }
+            #slideDesc  { font-size: 0.72rem; margin-top: 1px; }
+            .slide-counter { padding: 3px 10px; font-size: 0.7rem; }
+
+            /* ★ 이미지 영역: 16:9 고정 해제 → 남은 화면 전체 사용 */
+            .slide-body {
+                flex: 1 1 0;          /* 헤더/진행바 제외 나머지 전부 */
+                min-height: 0;
+                aspect-ratio: unset;  /* 16:9 제약 해제 */
+                max-height: none;
+            }
+            .slide-inner { padding: 0 46px; }
+            #slideImage {
+                max-width: 100%;
+                max-height: 100%;
+                width: 100%;          /* 가로 꽉 채움 */
+                height: 100%;
+                object-fit: contain;
+            }
+
+            /* 이전/다음 버튼 */
+            .nav-btn { width: 38px; height: 38px; font-size: 1.2rem; }
+            .btn-prev { left: 4px; }
+            .btn-next { right: 4px; }
+
+            /* 닫기 버튼: 좌측 상단으로 이동 */
+            .close-btn {
+                top: 10px; right: 10px;
+                width: 30px; height: 30px;
+                background: rgba(0,0,0,0.5);
+                border-color: rgba(255,255,255,0.2);
+                color: #fff;
+            }
+            .close-btn:hover { background: rgba(0,0,0,0.8); }
         }
 
         /* ============================================================
@@ -663,15 +706,29 @@ let curIndex  = 0;
 let touchStartX = 0;
 const imgCache = {};  // 이미지 감지 결과 캐시 (재접속 시 재사용)
 
-/* ── 이미지 존재 여부 체크 (Promise) ── */
-function probeImage(src) {
-    return new Promise(resolve => {
-        const img = new Image();
-        const t = setTimeout(() => resolve(false), 8000); // 8초 타임아웃
-        img.onload  = () => { clearTimeout(t); resolve(true); };
-        img.onerror = () => { clearTimeout(t); resolve(false); };
-        img.src = src;
-    });
+/* ── 이미지 존재 여부 체크: 일반경로 + 인코딩경로 둘 다 시도 ── */
+function probeImage(rawSrc) {
+    /* rawSrc: 'images/rooftop/이미지(1).jpg' (한글 그대로)
+       encodedSrc: 'images/rooftop/%EC%9D%B4...%281%29.jpg' (URL 인코딩)
+       → 브라우저/서버 환경마다 다르게 처리하므로 둘 다 시도하여 하나라도 성공하면 OK */
+    const parts      = rawSrc.split('/');
+    const filename   = parts.pop();
+    const folder     = parts.join('/');
+    const encodedSrc = folder + '/' + encodeURIComponent(filename.replace(IMG_EXT, '')) + IMG_EXT;
+
+    function tryLoad(src) {
+        return new Promise(resolve => {
+            const img = new Image();
+            const t = setTimeout(() => resolve(false), 6000);
+            img.onload  = () => { clearTimeout(t); resolve(true); };
+            img.onerror = () => { clearTimeout(t); resolve(false); };
+            img.src = src;
+        });
+    }
+
+    /* 두 경로 동시에 시도 → 하나라도 성공하면 true */
+    return Promise.all([tryLoad(rawSrc), tryLoad(encodedSrc)])
+                  .then(([a, b]) => a || b);
 }
 
 /* ── 폴더 내 이미지 자동 감지 (이미지(1).jpg ~ 이미지(N).jpg) ── */
